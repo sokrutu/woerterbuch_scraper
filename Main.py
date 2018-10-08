@@ -9,7 +9,7 @@ url = 'http://woerterbuchnetz.de/cgi-bin/WBNetz/call_wbgui_py_from_form'
 db = 'RhWB'
 mode = 'Volltextsuche'
 txtPat = 'frz'
-seiten = 134
+seiten = 3  #134
 fileName = 'demo.csv'
 log = 'errorlog.txt'
 wortarten = [('Interj.', 'Interjektion'),
@@ -48,14 +48,18 @@ def extract_topo(t):
             continue
 
         if elem.classes and 'rhwbkopfinfositalicsbase' not in elem.classes \
-                and elem.text and ':' not in elem.text:
-            cur += elem.text.replace(';', '')
+                and elem.text and ':' not in elem.text and ';' not in elem.text:
+            cur += elem.text
 
-        if elem.classes and 'rhwbkopfinfositalicsbase' in elem.classes:
+        elif elem.classes and 'rhwbkopfinfositalicsbase' not in elem.classes\
+                and elem.text and ';' in elem.text:
+            tmp = re.split('([;])', elem.text)
+            if len(tmp)>1:
+                cur += tmp[0].replace(';', '')
             res.append(cur)
             cur = ''
 
-        if elem.classes and 'rhwbkopfinfositalicsbase' not in elem.classes\
+        elif elem.classes and 'rhwbkopfinfositalicsbase' not in elem.classes\
                 and elem.text and ':' in elem.text:
             tmp = re.split(' ([\w.]+):', elem.text)
             if len(tmp)<2:
@@ -83,11 +87,15 @@ def extract_laut(t):
         if elem.classes and 'rhwbkopfinfositalicsbase' in elem.classes:
             cur += elem.text.replace(';', '')
 
-        if elem.classes and 'rhwbkopfinfositalicsbase' not in elem.classes:
+        if elem.classes and 'rhwbkopfinfositalicsbase' not in elem.classes \
+                and elem.text and ';' in elem.text:
             res.append(cur)
             cur = ''
-            if elem.text and ':' in elem.text:
-                break
+
+        if elem.classes and 'rhwbkopfinfositalicsbase' not in elem.classes \
+                and elem.text and ':' in elem.text:
+            res.append(cur)
+            break
 
     res = [x.strip(' ').strip('') for x in res]
     res = list(filter(None, res))
