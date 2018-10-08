@@ -156,13 +156,24 @@ def extract_fr(t):
         elif cont:
             continue
 
-        elif not cont and elem.classes and ('rhwbkompergspacedbase' in elem.classes
+        if not cont and elem.classes and ('rhwbkompergspacedbase' in elem.classes
                                             or 'rhwblemmaspacedbase' in elem.classes
                                             or 'rhwbnumrectebase' in elem.classes
                                             or 'rhwbleitwortboldbase' in elem.classes):
             break
 
-        elif elem.text:
+        elif not cont and elem.text and txtPat in elem.text:
+            tmp = re.split('('+txtPat+')', elem.text)
+            if len(tmp) == 1:
+                res += ''
+            elif len(tmp) == 2 and txtPat in tmp[0]:
+                res += tmp[1].replace(';', '')
+            elif len(tmp) == 2 and txtPat not in tmp[0]:
+                res += ''
+            elif len(tmp) > 2:
+                res += tmp[2].replace(';', '')
+
+        elif not cont and elem.text and txtPat not in elem.text:
             res += elem.text
 
     return res.replace(';', '')
