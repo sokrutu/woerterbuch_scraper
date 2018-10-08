@@ -9,7 +9,7 @@ url = 'http://woerterbuchnetz.de/cgi-bin/WBNetz/call_wbgui_py_from_form'
 db = 'RhWB'
 mode = 'Volltextsuche'
 txtPat = 'frz'
-seiten = 3  #134
+seiten = 134
 fileName = 'demo.csv'
 log = 'errorlog.txt'
 wortarten = [('Interj.', 'Interjektion'),
@@ -102,7 +102,7 @@ def extract_laut(t):
             res.append(cur)
             break
 
-    res = [x.strip(' ').strip('') for x in res]
+    res = [x.strip(' ') for x in res]
     res = list(filter(None, res))
     return res
 
@@ -142,7 +142,7 @@ def extract_dt(t):
         elif elem.text:
             res += elem.text
 
-    return res.replace(';', '').replace('', '').replace('', '')
+    return res.replace(';', '')
 
 
 def extract_fr(t):
@@ -165,7 +165,7 @@ def extract_fr(t):
         elif elem.text:
             res += elem.text
 
-    return res.replace(';', '').replace('', '').replace('', '')
+    return res.replace(';', '')
 
 
 def extract(t, req, lemId):
