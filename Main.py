@@ -57,7 +57,10 @@ def extract_topo(t):
             if len(tmp)>1:
                 cur += tmp[0].replace(';', '')
             res.append(cur)
-            cur = ''
+            if len(tmp)>2:
+                cur = tmp[2].replace(';', '')
+            else:
+                cur = ''
 
         elif elem.classes and 'rhwbkopfinfositalicsbase' not in elem.classes\
                 and elem.text and ':' in elem.text:
@@ -87,12 +90,12 @@ def extract_laut(t):
         if elem.classes and 'rhwbkopfinfositalicsbase' in elem.classes:
             cur += elem.text.replace(';', '')
 
-        if elem.classes and 'rhwbkopfinfositalicsbase' not in elem.classes \
+        elif elem.classes and 'rhwbkopfinfositalicsbase' not in elem.classes \
                 and elem.text and ';' in elem.text:
             res.append(cur)
             cur = ''
 
-        if elem.classes and 'rhwbkopfinfositalicsbase' not in elem.classes \
+        elif elem.classes and 'rhwbkopfinfositalicsbase' not in elem.classes \
                 and elem.text and ':' in elem.text:
             res.append(cur)
             break
