@@ -24,9 +24,9 @@ def extract_name(t):
     erster = t.xpath('//*[@id="wbarticle"]/span[1]')[0]
     zweiter = t.xpath('//*[@id="wbarticle"]/span[2]')[0]
     if erster.classes and "rhwbleitwortboldbase" in erster.classes and erster.text:
-        return erster.text.strip(' ').strip(',').strip(':')
+        return erster.text.strip(' ').strip(',')
     elif zweiter.classes and "rhwbleitwortboldbase" in zweiter.classes and zweiter.text:
-        return zweiter.text.strip(' ').strip(',').strip(':')
+        return zweiter.text.strip(' ').strip(',')
     else:
         res = ''
         for elem in tree.xpath('//div[@id="wbarticle"]/span'):
@@ -34,7 +34,7 @@ def extract_name(t):
                 break
             else:
                 res += elem.text
-        return res.strip(' ').strip(',').strip(':')
+        return res.strip(' ').strip(',')
 
 
 def extract_topo(t):
@@ -64,10 +64,12 @@ def extract_topo(t):
 
         elif elem.classes and 'rhwbkopfinfositalicsbase' not in elem.classes\
                 and elem.text and ':' in elem.text:
-            tmp = re.split(' ([\w.]+):', elem.text)
-            if len(tmp)<2:
+            tmp = re.split('([\w.]+):', elem.text)
+            if len(tmp)<2 and not re.search('([\w.]+):', elem.text):
                 tmp = re.split('([:])', elem.text)
-            cur += tmp[0].replace(';', '')
+                cur += tmp[0].replace(';', '').strip(':')
+            elif len(tmp)>1:
+                cur += tmp[0].replace(';', '')
             res.append(cur)
             break
 
@@ -111,7 +113,7 @@ def extract_wortart(t):
     for elem in tree.xpath('//div[@id="wbarticle"]/span'):
         if elem.classes and 'rhwbkopfinfositalicsbase' not in elem.classes \
                 and elem.text and ':' in elem.text:
-            res = re.search(' ([\w.]+):', elem.text)
+            res = re.search('([\w.]+):', elem.text)
             if res:
                 return res.group(1)
             else:
@@ -168,13 +170,21 @@ def extract_fr(t):
 
 def extract(t, req, lemId):
     name = extract_name(t)
-    topo = '"'+'\n'.join(extract_topo(t))+'"'
-    laut = '"'+'\n'.join(extract_laut(t))+'"'
-    vorgeschlwortart = extract_wortart(t)
-    wortart = ''
+    topo = '""'
+    laut = '""'
+    vorgeschlwortart = ''
+
+    if ':' in name:
+        name = name.strip(':')
+    else:
+        topo = '"'+'\n'.join(extract_topo(t))+'"'
+        laut = '"'+'\n'.join(extract_laut(t))+'"'
+        vorgeschlwortart = extract_wortart(t)
+
     dt = extract_dt(t)
     fr = extract_fr(t)
 
+    wortart = ''
     matching = [x for x in wortarten if x[0] == vorgeschlwortart]
     if len(matching)>0:
         wortart = matching[0][1]
@@ -182,19 +192,17 @@ def extract(t, req, lemId):
 
     if name != "":
         print(name)
-        sys.stdout.flush()
         f = open(fileName, "a")  #codecs.open(fileName, "a", "utf-8")  #open(fileName, "a")
-        f.write((name + ';'
+        f.write(name + ';'
                 + topo + ';'
                 + laut + ';'
                 + wortart + ';'
                 + vorgeschlwortart + ';'
                 + dt + ';'
                 + fr + ';'
-                + '=HYPERLINK("'+req+'","'+lemId+'")' + ';' + '\n').encode('utf8').decode('utf-8'))
+                + '=HYPERLINK("'+req+'","'+lemId+'")' + ';' + '\n')
     else:
         print('Skipped '+req)
-        sys.stdout.flush()
         f = open(log, "a")
         f.write(req + '\n')
 
